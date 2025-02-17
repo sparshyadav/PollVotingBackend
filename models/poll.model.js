@@ -17,14 +17,17 @@ const pollSchema = new mongoose.Schema({
         default: () => Math.floor(1000 + Math.random() * 9000)
     },
     expiresAt: {
-        type: Date,
+        type: String,
         required: true
     },
     isActive: {
         type: Boolean,
         default: true
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 })
 
-module.exports = mongoose.model("Poll", pollSchema);
-jnkn nm mn mmmn mn nb
+export default mongoose.model("Poll", pollSchema);
