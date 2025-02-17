@@ -1,4 +1,4 @@
-import { createPollService,getPollByIdService } from "../services/poll.service.js";
+import { createPollService, getPollByIdService, castVoteService } from "../services/poll.service.js";
 
 export const createPoll = async (req, res) => {
     try {
@@ -26,6 +26,25 @@ export const getPollById = async (req, res) => {
             code: 200,
             poll: poll,
             message: "Poll Send Successfully"
+        });
+    }
+    catch (error) {
+        const statusCode = error.code || 500;
+
+        res.status(statusCode).json({
+            code: statusCode,
+            message: error.message || 'An Unexpected Error Occurred'
+        });
+    }
+}
+
+export const castVote = async (req, res) => {
+    try {
+        let poll = await castVoteService(req.user, req.params.code, req.body);
+        res.status(200).json({
+            code: 200,
+            poll: poll,
+            message: "Vote Casted Successfully"
         });
     }
     catch (error) {

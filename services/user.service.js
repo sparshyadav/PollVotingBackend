@@ -6,7 +6,14 @@ export const registerUserService = async (body) => {
     try {
         let { name, phone, password } = body;
 
-        let user = await User.findOne({ phone });
+        if(!name || !phone || !password){
+            const error = new Error("All fields required")
+            error.code = 400
+            throw error
+        }
+
+        let user = await User.findOne({ phone: phone });
+        console.log("user", user)
         if (user) {
             const error = new Error('User Already Exists, Please Try Again with a Phone Number');
             error.code = 401;
@@ -14,11 +21,11 @@ export const registerUserService = async (body) => {
         }
 
         let hashedPassword = await bcrypt.hash(password, 10);
-        user = await User.create({
+        let user1= await User.create({
             name, phone, password: hashedPassword
         });
 
-        return user;
+        return user1;
     }
     catch (error) {
         console.log('Error in registerUserService:', error.message)
