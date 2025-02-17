@@ -27,3 +27,4 @@ const pollSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model("Poll", pollSchema);
+jnkn nm mn mmmn mn nb
