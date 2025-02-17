@@ -1,18 +1,16 @@
-import Poll from "../models/poll.model.js";
+import Poll from "../models/Poll.model.js";
 import User from "../models/user.model.js";
 import crypto from 'crypto'; 
 
 export const createPollService = async (user, body) => {
     try {
-        console.log(user);
-
         const { question, options, expiresAt } = body;
         const uuser = await User.findById(user.userId);
         if (!uuser) {
             throw new Error("User not found");
         }
 
-        const pollCode = crypto.randomBytes(4).toString('hex').toUpperCase(); // Example: "A1B2C3D4"
+        const pollCode = crypto.randomBytes(4).toString('hex').toUpperCase(); 
 
         const newPoll = await Poll.create({
             question,
@@ -30,3 +28,35 @@ export const createPollService = async (user, body) => {
         throw error;
     }
 };
+
+export const getPollByIdService = async (user, pollCode) => {
+    try {
+        if(!pollCode){
+            throw {
+                code: 401,
+                message: "Poll Code is Required to Fetch Poll Details"
+            }
+        }
+
+        const poll=await Poll.findOne({code: pollCode});
+        if(!poll){
+            throw {
+                code: 404,
+                message: "No Such Poll Found"
+            }
+        }
+
+        if(user.userId !== poll.createdBy.toString()){
+            throw {
+                code: 403,
+                message: "You're Not Authorized to Access Someone Else's Poll"
+            }
+        }
+
+        return poll;
+    } catch (error) {
+        console.log('Error in createPollService:', error.message);
+        throw error;
+    }
+};
+
