@@ -4,34 +4,18 @@ import jwt from 'jsonwebtoken';
 
 export const registerUserService = async (body) => {
     try {
-        let { name, email, phone, password, role } = body;
+        let { name, phone, password } = body;
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ phone });
         if (user) {
-            const error = new Error('User Already Exists, Please Try Again with a New Email');
+            const error = new Error('User Already Exists, Please Try Again with a Phone Number');
             error.code = 401;
             throw error;
-        }
-
-        user = await User.findOne({ phone });
-        if (user) {
-            const error = new Error('User Already Exists, Pleasy Try Again with a New Phone Number');
-            error.code = 401;
-            throw error;
-        }
-
-        if (role === "admin") {
-            user = await User.findOne({ role });
-            if (user) {
-                const error = new Error('User Admin Already Exists, Pleasy Try Again with Owner Role');
-                error.code = 401;
-                throw error;
-            }
         }
 
         let hashedPassword = await bcrypt.hash(password, 10);
         user = await User.create({
-            name, email, phone, password: hashedPassword, role
+            name, phone, password: hashedPassword
         });
 
         return user;
@@ -44,11 +28,11 @@ export const registerUserService = async (body) => {
 
 export const loginUserService = async (body) => {
     try {
-        const { email, password } = body;
+        const { phone, password } = body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ phone });
         if (!user) {
-            const error = new Error('User Already Exists, Pleasy Try Again with a New Email');
+            const error = new Error('User Already Exists, Pleasy Try Again with a Phone');
             error.code = 401;
             throw error;
         }
@@ -60,7 +44,7 @@ export const loginUserService = async (body) => {
             throw error;
         }
 
-        const token = await jwt.sign({ userId: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET);
+        const token = await jwt.sign({ userId: user._id, phone: phone }, process.env.JWT_SECRET);
 
         return token;
     }
