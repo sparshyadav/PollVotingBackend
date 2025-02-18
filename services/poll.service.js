@@ -125,3 +125,50 @@ export const castVoteService = async (user, pollCode, body) => {
         throw error;
     }
 };
+
+export const generatePollResultService = async (user, pollCode) => {
+    try {
+        if (!pollCode) {
+            throw { code: 401, message: "Poll Code is Required to Fetch Poll Details" };
+        }
+
+        const poll = await Poll.findOne({ code: pollCode })
+            .populate({
+                path: "options",
+                populate: { path: "votes", select: "name email phone" } // Assuming votes store user IDs
+            })
+            .populate("createdBy", "name phone");
+
+        if (!poll) {
+            throw { code: 404, message: "No Such Poll Found" };
+        }
+
+        if (user.userId !== poll.createdBy._id.toString()) {
+            throw { code: 403, message: "You're Not Authorized to Access Someone Else's Poll" };
+        }
+
+        // Format the poll result
+        const pollResult = {
+            pollCode: poll.code,
+            question: poll.question,
+            createdBy: {
+                name: poll.createdBy.name,
+                phone: poll.createdBy.phone,
+            },
+            options: poll.options.map(option => ({
+                optionText: option.text,
+                votesCount: option.votes.length,
+                voters: option.votes.map(voter => ({
+                    name: voter.name,
+                    email: voter.email,
+                    phone: voter.phone
+                }))
+            }))
+        };
+
+        return pollResult;
+    } catch (error) {
+        console.log("Error in generatePollResultService:", error.message);
+        throw error;
+    }
+};
